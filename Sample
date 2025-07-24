@@ -1,0 +1,46 @@
+name: Deploy to Snowflake
+
+on:
+  push:
+    branches:
+      - main  # or your deployment branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      SNOWSQL_ACCOUNT: ${{ secrets.SNOWSQL_ACCOUNT }}
+      SNOWSQL_USER: ${{ secrets.SNOWSQL_USER }}
+      SNOWSQL_PASSWORD: ${{ secrets.SNOWSQL_PASSWORD }}
+      SNOWSQL_ROLE: ${{ secrets.SNOWSQL_ROLE }}
+      SNOWSQL_WAREHOUSE: ${{ secrets.SNOWSQL_WAREHOUSE }}
+      SNOWSQL_DATABASE: ${{ secrets.SNOWSQL_DATABASE }}
+      SNOWSQL_SCHEMA: ${{ secrets.SNOWSQL_SCHEMA }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install SnowSQL CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y unzip
+          curl -O https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2/linux_x86_64/snowsql-1.2.21-linux_x86_64.bash
+          bash snowsql-1.2.21-linux_x86_64.bash
+
+      - name: Add SnowSQL to PATH
+        run: |
+          echo "$HOME/.snowsql" >> $GITHUB_PATH
+
+      - name: Run SQL scripts on Snowflake
+        run: |
+          ~/.snowsql/snowsql \
+            -a "$SNOWSQL_ACCOUNT" \
+            -u "$SNOWSQL_USER" \
+            -r "$SNOWSQL_ROLE" \
+            -w "$SNOWSQL_WAREHOUSE" \
+            -d "$SNOWSQL_DATABASE" \
+            -s "$SNOWSQL_SCHEMA" \
+            -p "$SNOWSQL_PASSWORD" \
+            -f path/to/your_script.sql
