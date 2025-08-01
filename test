@@ -1,2 +1,7 @@
 First line of code is added
 Second line of code is added
+dev  ---→  uat  ---→  prod
+ ↑         ↑          ↑
+ |         |_____     |
+ |               |    |
+ |------- feature   hotfix
