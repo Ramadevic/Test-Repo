@@ -1,0 +1,205 @@
+**Title: Snowflake DevOps Process with DBT and GitHub**
+
+---
+
+### **1. Objective**
+
+To establish a comprehensive, automated, and governed DevOps process for managing Snowflake development lifecycle using GitHub and DBT.
+
+---
+
+### **2. Scope**
+
+* Applies to all Snowflake environments (Dev, UAT, Prod)
+* Covers SQL object changes (schemas, views, procedures)
+* Includes DBT project integration
+* Incorporates version control and CI/CD practices using GitHub
+
+---
+
+### **3. Governance**
+
+* All code changes are tracked via GitHub
+* Mandatory peer review and approval before merge
+* Deployment is performed via CI/CD with logging and traceability
+* Environment access and roles are governed via RBAC in Snowflake
+
+---
+
+### **4. Assumptions and Dependencies**
+
+* Developers have access to GitHub, Snowflake, and CI/CD tools
+* DBT is configured and linked with Snowflake
+* Secrets are managed via a secure vault
+* Network access to Snowflake is available for CI/CD runners
+
+---
+
+### **5. Snowflake DevOps Architecture**
+
+**Components:**
+
+* Source Control: GitHub
+* CI/CD: GitHub Actions / Jenkins
+* Transformation: DBT
+* Data Warehouse: Snowflake
+
+**Flow:**
+Developer -> Git Feature Branch -> Pull Request -> CI/CD -> Deploy to Snowflake
+
+---
+
+### **6. Prerequisites**
+
+* Snowflake account setup with roles and warehouses
+* GitHub repository initialized
+* CI/CD agent setup with credentials
+* DBT profile.yml configured with Snowflake connection
+
+---
+
+### **7. Snowflake Deployment Operating Model**
+
+* Changes are pushed to a feature branch
+* Merges are only allowed via PRs
+* CI/CD deploys approved changes to environments in sequence
+* Only tagged releases are promoted to production
+
+---
+
+### **8. Using Schema Changes in a CI/CD Pipeline**
+
+* Schema changes (CREATE/ALTER TABLE) are written in versioned .sql files
+* CI/CD parses these scripts and applies them in a defined order
+* Success/failure is logged with error handling and rollback
+
+---
+
+### **9. File Naming Conventions**
+
+* `V<version_number>__<change_name>.sql`
+* Example: `V001__create_customer_table.sql`
+
+---
+
+### **10. Key File Types in Schema Change**
+
+* `.sql` – DDL and DML changes
+* `.yml` – DBT metadata and configurations
+* `.py` – Optional scripts for custom logic
+
+---
+
+### **11. Versioned**
+
+* Every schema change file is versioned sequentially
+* Version is reflected in filename and tracked in Git history
+
+---
+
+### **12. Repeatable**
+
+* Scripts are written idempotently where possible (e.g., `CREATE OR REPLACE`)
+* Ensures safe re-runs without duplication or error
+
+---
+
+### **13. Always**
+
+* Always apply schema changes in the same order across environments
+* Maintain consistency between Dev, UAT, and Prod
+
+---
+
+### **14. Change History Table**
+
+* A metadata table in Snowflake (`SCHEMA_CHANGE_LOG`) records:
+
+  * Script name
+  * Version
+  * Author
+  * Applied timestamp
+  * Status (Success/Failure)
+
+---
+
+### **15. Branching Strategy for Snowflake**
+
+```text
+main (Production)
+│
+├── uat
+│   └── dev
+│       └── feature/<feature-name>
+```
+
+* `main` = Production
+* `uat` = Pre-production testing
+* `dev` = Integration of features
+* `feature/*` = Individual developer work
+
+---
+
+### **16. Merging Mechanism / Code Merging Process**
+
+* Developers create PRs from `feature/*` to `dev`
+* PR requires at least 1 reviewer approval
+* Upon successful CI test, changes are merged to `dev`
+* Periodic merges from `dev` to `uat`, and then to `main`
+
+---
+
+### **17. POT (Proof of Testing)**
+
+* Each PR must include:
+
+  * Test evidence (e.g., screenshots, logs)
+  * DBT test results
+  * Data validation output (if applicable)
+
+---
+
+### **18. Approvals**
+
+* At least 1 peer review is required
+* UAT to Prod merge requires Lead/Manager approval
+* Approvals are documented in GitHub PR history
+
+---
+
+### **19. DBT Prerequisites**
+
+* `profiles.yml` with Snowflake credentials
+* Project with models, seeds, snapshots structured
+* Tests and documentation included in DBT structure
+* Git repo initialized for DBT project
+
+---
+
+### **20. Branching Strategy for DBT using GitHub**
+
+Follows same strategy as Snowflake:
+
+```text
+dbt-main (Production)
+│
+├── dbt-uat
+│   └── dbt-dev
+│       └── feature/<feature-name>
+```
+
+* Keep DBT and Snowflake code in separate folders within the same repo or separate repos
+
+---
+
+### **21. High Level Process Flow**
+
+```
+Developer --> Git Branch --> Code Commit --> Pull Request --> Code Review --> CI/CD Validation --> UAT --> Approval --> PROD
+```
+
+---
+
+Would you like a visual diagram of this process included?YES
+
+PLEASE provide
